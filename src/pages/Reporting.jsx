@@ -1,14 +1,7 @@
 import { useState } from "react";
 import { FiFilter, FiDollarSign, FiTrendingUp, FiFileText, FiChevronDown } from "react-icons/fi";
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  Tooltip,
-  ResponsiveContainer,
-  CartesianGrid,
-} from "recharts";
+import LineChartCard from "../components/LineChartCard";
+import DataTableCard from "../components/DataTableCard";
 
 export default function Reporting() {
   const [filterOpen, setFilterOpen] = useState(true);
@@ -26,13 +19,31 @@ export default function Reporting() {
   ];
 
   const tableData = [
-    { date: "22 Feb 2026", appId: "com/music/musicplayer", site: "Fmrxm.com", revenue: "$1,530", impression: "12,450", eCTR: "2.1%", ctr: "1.8%", adExchangeMatch: "85%", totalFill: "92%" },
-    { date: "22 Feb 2026", appId: "com/music/musicplayer", site: "Fmrxm.com", revenue: "$1,830", impression: "14,200", eCTR: "2.3%", ctr: "2.0%", adExchangeMatch: "88%", totalFill: "94%" },
-    { date: "21 Feb 2026", appId: "com/music/musicplayer", site: "Fmrxm.com", revenue: "$2,529", impression: "18,900", eCTR: "2.5%", ctr: "2.2%", adExchangeMatch: "90%", totalFill: "96%" },
-    { date: "21 Feb 2026", appId: "com/music/musicplayer", site: "Fmrxm.com", revenue: "$1,209", impression: "9,800", eCTR: "1.9%", ctr: "1.6%", adExchangeMatch: "82%", totalFill: "89%" },
-    { date: "20 Feb 2026", appId: "com/music/musicplayer", site: "Fmrxm.com", revenue: "$1,650", impression: "13,100", eCTR: "2.2%", ctr: "1.9%", adExchangeMatch: "86%", totalFill: "93%" },
-    { date: "20 Feb 2026", appId: "com/music/musicplayer", site: "Fmrxm.com", revenue: "$2,100", impression: "16,500", eCTR: "2.4%", ctr: "2.1%", adExchangeMatch: "87%", totalFill: "95%" },
+    { date: "22 Feb 2026", appId: "com/music/musicplayer", site: "Fmrxm.com", revenue: 1530, impression: 12450, eCTR: 2.1, ctr: 1.8, adExchangeMatch: 85, totalFill: 92 },
+    { date: "22 Feb 2026", appId: "com/music/musicplayer", site: "Fmrxm.com", revenue: 1830, impression: 14200, eCTR: 2.3, ctr: 2.0, adExchangeMatch: 88, totalFill: 94 },
+    { date: "21 Feb 2026", appId: "com/music/musicplayer", site: "Fmrxm.com", revenue: 2529, impression: 18900, eCTR: 2.5, ctr: 2.2, adExchangeMatch: 90, totalFill: 96 },
+    { date: "21 Feb 2026", appId: "com/music/musicplayer", site: "Fmrxm.com", revenue: 1209, impression: 9800, eCTR: 1.9, ctr: 1.6, adExchangeMatch: 82, totalFill: 89 },
+    { date: "20 Feb 2026", appId: "com/music/musicplayer", site: "Fmrxm.com", revenue: 1650, impression: 13100, eCTR: 2.2, ctr: 1.9, adExchangeMatch: 86, totalFill: 93 },
+    { date: "20 Feb 2026", appId: "com/music/musicplayer", site: "Fmrxm.com", revenue: 2100, impression: 16500, eCTR: 2.4, ctr: 2.1, adExchangeMatch: 87, totalFill: 95 },
   ];
+
+  const totals = tableData.reduce(
+    (acc, row) => ({
+      revenue: acc.revenue + row.revenue,
+      impression: acc.impression + row.impression,
+      eCTR: acc.eCTR + row.eCTR,
+      ctr: acc.ctr + row.ctr,
+      adExchangeMatch: acc.adExchangeMatch + row.adExchangeMatch,
+      totalFill: acc.totalFill + row.totalFill,
+    }),
+    { revenue: 0, impression: 0, eCTR: 0, ctr: 0, adExchangeMatch: 0, totalFill: 0 }
+  );
+
+  const rowCount = tableData.length;
+  const avgECTR = totals.eCTR / rowCount;
+  const avgCTR = totals.ctr / rowCount;
+  const avgAdExchangeMatch = totals.adExchangeMatch / rowCount;
+  const avgTotalFill = totals.totalFill / rowCount;
 
   const chartData = [
     { date: "Feb 04", earning: 42.5 },
@@ -173,102 +184,86 @@ export default function Reporting() {
           ))}
         </div>
 
-        {/* ================= DATA TABLE ================= */}
-        <div className="bg-white rounded-2xl shadow-sm p-6 mb-6">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="bg-gray-100 text-gray-600">
-                <tr>
-                  <th className="px-4 py-3 text-left font-medium">Date</th>
-                  <th className="px-4 py-3 text-left font-medium">App ID</th>
-                  <th className="px-4 py-3 text-left font-medium">Site</th>
-                  <th className="px-4 py-3 text-left font-medium">Revenue</th>
-                  <th className="px-4 py-3 text-left font-medium">Impression</th>
-                  <th className="px-4 py-3 text-left font-medium">eCTR</th>
-                  <th className="px-4 py-3 text-left font-medium">CTR</th>
-                  <th className="px-4 py-3 text-left font-medium">Ad Exchange Match Rate</th>
-                  <th className="px-4 py-3 text-left font-medium">Total Fill Rate</th>
-                </tr>
-              </thead>
-              <tbody>
-                {tableData.map((row, index) => (
-                  <tr key={index} className="border-b border-gray-100 hover:bg-gray-50">
-                    <td className="px-4 py-3 text-gray-700">{row.date}</td>
-                    <td className="px-4 py-3 text-gray-700">{row.appId}</td>
-                    <td className="px-4 py-3 text-gray-700">{row.site}</td>
-                    <td className="px-4 py-3 font-medium text-gray-800">{row.revenue}</td>
-                    <td className="px-4 py-3 text-gray-700">{row.impression}</td>
-                    <td className="px-4 py-3 text-gray-700">{row.eCTR}</td>
-                    <td className="px-4 py-3 text-gray-700">{row.ctr}</td>
-                    <td className="px-4 py-3 text-gray-700">{row.adExchangeMatch}</td>
-                    <td className="px-4 py-3 text-gray-700">{row.totalFill}</td>
-                  </tr>
-                ))}
-                <tr className="bg-gray-50 font-medium">
-                  <td className="px-4 py-3 text-gray-700">Total</td>
-                  <td className="px-4 py-3 text-gray-700">All App ID</td>
-                  <td className="px-4 py-3 text-gray-700">All Site</td>
-                  <td className="px-4 py-3 text-gray-800">—</td>
-                  <td className="px-4 py-3 text-gray-700">—</td>
-                  <td className="px-4 py-3 text-gray-700">—</td>
-                  <td className="px-4 py-3 text-gray-700">—</td>
-                  <td className="px-4 py-3 text-gray-700">—</td>
-                  <td className="px-4 py-3 text-gray-700">—</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-          {/* Pagination */}
-          <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-200">
-            <span className="text-sm text-gray-500">Page {currentPage} of {totalPages}</span>
-            <div className="flex items-center gap-1">
-              <button
-                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                disabled={currentPage === 1}
-                className="p-2 rounded-lg hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                ←
-              </button>
-              <button
-                onClick={() => setCurrentPage(1)}
-                className={`min-w-[2rem] px-2 py-1 rounded-lg text-sm ${currentPage === 1 ? "bg-blue-600 text-white" : "hover:bg-gray-100"}`}
-              >
-                1
-              </button>
-              <button
-                onClick={() => setCurrentPage(2)}
-                className={`min-w-[2rem] px-2 py-1 rounded-lg text-sm ${currentPage === 2 ? "bg-blue-600 text-white" : "hover:bg-gray-100"}`}
-              >
-                2
-              </button>
-              <button
-                onClick={() => setCurrentPage(3)}
-                className={`min-w-[2rem] px-2 py-1 rounded-lg text-sm ${currentPage === 3 ? "bg-blue-600 text-white" : "hover:bg-gray-100"}`}
-              >
-                3
-              </button>
-              <span className="px-2 text-gray-400">...</span>
-              <button
-                onClick={() => setCurrentPage(30)}
-                className={`min-w-[2rem] px-2 py-1 rounded-lg text-sm ${currentPage === 30 ? "bg-blue-600 text-white" : "hover:bg-gray-100"}`}
-              >
-                30
-              </button>
-              <button
-                onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-                disabled={currentPage === totalPages}
-                className="p-2 rounded-lg hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                →
-              </button>
-            </div>
-          </div>
+        {/* ================= DATA TABLE (reusable component) ================= */}
+        <div className="mb-6">
+          <DataTableCard
+            title="Report Data"
+            columns={[
+              { key: "date", label: "Date" },
+              { key: "appId", label: "App ID" },
+              { key: "site", label: "Site" },
+              {
+                key: "revenue",
+                label: "Revenue",
+                render: (row) => `$${row.revenue.toLocaleString()}`,
+                cellClassName: "font-medium text-gray-800",
+              },
+              {
+                key: "impression",
+                label: "Impression",
+                render: (row) => row.impression.toLocaleString(),
+              },
+              {
+                key: "eCTR",
+                label: "eCTR",
+                render: (row) => `${row.eCTR.toFixed(1)}%`,
+              },
+              {
+                key: "ctr",
+                label: "CTR",
+                render: (row) => `${row.ctr.toFixed(1)}%`,
+              },
+              {
+                key: "adExchangeMatch",
+                label: "Ad Exchange Match Rate",
+                render: (row) => `${row.adExchangeMatch.toFixed(0)}%`,
+              },
+              {
+                key: "totalFill",
+                label: "Total Fill Rate",
+                render: (row) => `${row.totalFill.toFixed(0)}%`,
+              },
+            ]}
+            data={tableData}
+            totalRow={
+              <tr className="bg-gray-50 font-medium">
+                <td className="px-4 py-3 text-gray-700">Total</td>
+                <td className="px-4 py-3 text-gray-700">All App ID</td>
+                <td className="px-4 py-3 text-gray-700">All Site</td>
+                <td className="px-4 py-3 text-gray-800">
+                  ${totals.revenue.toLocaleString()}
+                </td>
+                <td className="px-4 py-3 text-gray-700">
+                  {totals.impression.toLocaleString()}
+                </td>
+                <td className="px-4 py-3 text-gray-700">{avgECTR.toFixed(1)}%</td>
+                <td className="px-4 py-3 text-gray-700">{avgCTR.toFixed(1)}%</td>
+                <td className="px-4 py-3 text-gray-700">
+                  {avgAdExchangeMatch.toFixed(0)}%
+                </td>
+                <td className="px-4 py-3 text-gray-700">
+                  {avgTotalFill.toFixed(0)}%
+                </td>
+              </tr>
+            }
+            pagination={{
+              currentPage,
+              totalPages,
+              onPageChange: setCurrentPage,
+              pageNumbers: [1, 2, 3, 30],
+            }}
+          />
         </div>
 
-        {/* ================= DAILY PERFORMANCE CHART ================= */}
-        <div className="bg-white rounded-2xl shadow-sm p-6">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="font-semibold text-gray-700 text-lg">Daily Performance</h2>
+        {/* ================= DAILY PERFORMANCE CHART (reusable component) ================= */}
+        <LineChartCard
+          data={chartData}
+          title="Daily Performance"
+          dataKey="earning"
+          xAxisKey="date"
+          valueLabel="Estimated Earning ($)"
+          showLegend
+          rightHeader={
             <select
               value={chartRange}
               onChange={(e) => setChartRange(e.target.value)}
@@ -278,34 +273,8 @@ export default function Reporting() {
               <option>Last 14 Days</option>
               <option>This Month</option>
             </select>
-          </div>
-          <div className="h-80">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={chartData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                <XAxis dataKey="date" tick={{ fontSize: 12 }} />
-                <YAxis tick={{ fontSize: 12 }} label={{ value: "Estimated Earning ($)", angle: -90, position: "insideLeft" }} />
-                <Tooltip
-                  formatter={(value) => [`Daily Earning ($): ${value}`, "Estimated Earning ($)"]}
-                  labelFormatter={(label) => label}
-                />
-                <Line
-                  type="monotone"
-                  dataKey="earning"
-                  name="Estimated Earning ($)"
-                  stroke="#3b82f6"
-                  strokeWidth={2}
-                  dot={{ r: 3 }}
-                  activeDot={{ r: 5 }}
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-          <div className="flex items-center gap-2 mt-2">
-            <input type="checkbox" id="legend" defaultChecked className="rounded" />
-            <label htmlFor="legend" className="text-sm text-gray-600">Estimated Earning ($)</label>
-          </div>
-        </div>
+          }
+        />
       </div>
     </div>
   );

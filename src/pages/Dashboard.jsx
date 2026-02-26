@@ -1,15 +1,8 @@
 import { useState } from "react";
 import { FiFilter, FiCheck, FiRefreshCw, FiChevronUp, FiChevronDown, FiCalendar } from "react-icons/fi";
 import { AiOutlinePlus } from "react-icons/ai";
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  Tooltip,
-  ResponsiveContainer,
-  CartesianGrid,
-} from "recharts";
+import LineChartCard from "../components/LineChartCard";
+import DataTableCard from "../components/DataTableCard";
 
 export default function Dashboard() {
   const [filterOpen, setFilterOpen] = useState(true);
@@ -179,74 +172,45 @@ export default function Dashboard() {
           ))}
         </div>
 
-        {/* ================= CHART ================= */}
-        <div className="bg-white rounded-2xl shadow-sm p-6 mb-6">
-          <div className="flex justify-between mb-4">
-            <h2 className="font-semibold text-gray-700 text-lg">
-              Daily Performance
-            </h2>
-            <span className="text-sm text-gray-500">Last 7 Days</span>
-          </div>
-
-          <div className="h-80">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={chartData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="day" />
-                <YAxis />
-                <Tooltip />
-                <Line
-                  type="monotone"
-                  dataKey="revenue"
-                  stroke="#3b82f6"
-                  strokeWidth={3}
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
+        {/* ================= CHART (reusable component) ================= */}
+        <div className="mb-6">
+          <LineChartCard
+            data={chartData}
+            title="Daily Performance"
+            subtitle="Last 7 Days"
+            dataKey="revenue"
+            xAxisKey="day"
+            height={320}
+          />
         </div>
 
-        {/* ================= TABLE ================= */}
-        <div className="bg-white rounded-2xl shadow-sm p-6">
-          <div className="flex justify-between mb-4">
-            <h2 className="font-semibold text-gray-700 text-lg">
-              Detailed Report
-            </h2>
+        {/* ================= TABLE (reusable component) ================= */}
+        <DataTableCard
+          title="Detailed Report"
+          rightHeader={
             <button className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg text-sm">
               <AiOutlinePlus /> Add Filter
             </button>
-          </div>
-
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="bg-gray-100 text-gray-600">
-                <tr>
-                  <th className="px-4 py-3 text-left">Date</th>
-                  <th className="px-4 py-3 text-left">Revenue</th>
-                  <th className="px-4 py-3 text-left">Impressions</th>
-                  <th className="px-4 py-3 text-left">Clicks</th>
-                  <th className="px-4 py-3 text-left">CTR</th>
-                </tr>
-              </thead>
-              <tbody>
-                {tableData.map((row, index) => {
-                  const ctr = ((row.clicks / row.impressions) * 100).toFixed(2);
-                  return (
-                    <tr key={index} className="border-b hover:bg-gray-50">
-                      <td className="px-4 py-3">{row.date}</td>
-                      <td className="px-4 py-3 font-medium">
-                        ${row.revenue}
-                      </td>
-                      <td className="px-4 py-3">{row.impressions}</td>
-                      <td className="px-4 py-3">{row.clicks}</td>
-                      <td className="px-4 py-3">{ctr}%</td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        </div>
+          }
+          columns={[
+            { key: "date", label: "Date" },
+            {
+              key: "revenue",
+              label: "Revenue",
+              render: (row) => `$${row.revenue}`,
+              cellClassName: "font-medium text-gray-800",
+            },
+            { key: "impressions", label: "Impressions" },
+            { key: "clicks", label: "Clicks" },
+            {
+              key: "ctr",
+              label: "CTR",
+              render: (row) =>
+                `${((row.clicks / row.impressions) * 100).toFixed(2)}%`,
+            },
+          ]}
+          data={tableData}
+        />
 
       </div>
     </div>

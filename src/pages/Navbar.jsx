@@ -1,10 +1,19 @@
-import { NavLink } from "react-router-dom";
-import { FiUser, FiChevronDown } from "react-icons/fi";
+import { useState } from "react";
+import { NavLink, useNavigate } from "react-router-dom";
+import { FiUser, FiChevronDown, FiLogOut } from "react-icons/fi";
 
 export default function Navbar() {
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const navigate = useNavigate();
+
   const navClass = "px-5 py-2.5 text-sm font-medium rounded-full transition-colors";
   const activeClass = "bg-blue-500 text-white shadow-sm";
   const inactiveClass = "text-gray-600 hover:text-gray-800";
+
+  const handleLogout = () => {
+    setIsUserMenuOpen(false);
+    navigate("/");
+  };
 
   return (
     <nav className="flex items-center justify-between px-8 py-3 bg-white border-b border-gray-200 shadow-sm">
@@ -12,15 +21,11 @@ export default function Navbar() {
       {/* Left: Logo + Brand */}
       <div className="flex items-center gap-3">
         <NavLink to="/dashboard" className="flex items-center gap-3">
-          {/* Three diagonal lines: blue, green, yellow */}
-          <div className="flex flex-col gap-1">
-            <div className="w-5 h-0.5 bg-blue-500 rounded-full transform -rotate-45 origin-left" />
-            <div className="w-5 h-0.5 bg-green-500 rounded-full transform -rotate-45 origin-left" />
-            <div className="w-5 h-0.5 bg-amber-400 rounded-full transform -rotate-45 origin-left" />
-          </div>
-          <span className="text-gray-900 font-medium text-sm">
-            Google Ad Manager
-          </span>
+          <img
+            src="/ads manager.png"
+            alt="Google Ad Manager"
+            className="h-8 w-auto object-contain"
+          />
         </NavLink>
       </div>
 
@@ -38,24 +43,44 @@ export default function Navbar() {
         >
           Reporting
         </NavLink>
-        <button className={`${navClass} ${inactiveClass}`}>
+        <NavLink
+          to="/admin"
+          className={({ isActive }) => `${navClass} ${isActive ? activeClass : inactiveClass}`}
+        >
           Admin
-        </button>
-        <button className={`${navClass} ${inactiveClass}`}>
+        </NavLink>
+        <NavLink
+          to="/domain-user"
+          className={({ isActive }) => `${navClass} ${isActive ? activeClass : inactiveClass}`}
+        >
           Domain User
-        </button>
+        </NavLink>
       </div>
 
-      {/* Right: User dropdown - bordered, person icon + Master + arrow */}
-      <div className="flex items-center">
+      {/* Right: User dropdown - keep same button UI, just show Logout when clicked */}
+      <div className="relative flex items-center">
         <button
           type="button"
+          onClick={() => setIsUserMenuOpen((open) => !open)}
           className="flex items-center gap-2 border border-gray-300 bg-transparent px-4 py-2 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors"
         >
           <FiUser className="w-5 h-5 text-gray-800" />
           <span className="text-sm font-medium text-gray-800">Master</span>
           <FiChevronDown className="w-4 h-4 text-gray-600" />
         </button>
+
+        {isUserMenuOpen && (
+          <div className="absolute right-0 top-full mt-2 w-32 rounded-lg border border-gray-200 bg-white shadow-lg py-0.5 z-10">
+            <button
+              type="button"
+              onClick={handleLogout}
+              className="w-full flex items-center justify-center gap-2 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-100"
+            >
+              <span>Logout</span>
+              <FiLogOut className="w-3.5 h-3.5 text-gray-500 shrink-0" />
+            </button>
+          </div>
+        )}
       </div>
 
     </nav>

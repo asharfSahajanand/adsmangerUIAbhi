@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
+
 export default function Login() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -23,14 +24,11 @@ export default function Login() {
       {/* Header */}
       <header className="w-full flex items-center justify-between px-10 py-5 bg-white shadow-sm">
         <div className="flex items-center gap-3">
-          <div className="flex gap-[3px]">
-            <span className="w-[4px] h-6 bg-yellow-400 rounded-sm -skew-x-12"></span>
-            <span className="w-[4px] h-6 bg-blue-500 rounded-sm -skew-x-12"></span>
-            <span className="w-[4px] h-6 bg-yellow-400 rounded-sm -skew-x-12"></span>
-          </div>
-          <span className="text-lg font-medium text-gray-700">
-            Google Ad Manager
-          </span>
+          <img
+            src="/ads manager.png"
+            alt="Google Ad Manager"
+            className="h-8 w-auto object-contain"
+          />
         </div>
         <button
           type="button"
