@@ -14,7 +14,7 @@ export default function DomainUser() {
   };
 
   return (
-    <div className="bg-[#f4f6fb] min-h-screen p-6">
+    <div className="bg-[#f4f6fb] min-h-screen px-4 py-6 sm:px-6">
       <div className="max-w-4xl mx-auto">
         {/* Page title */}
         <div className="mb-6">

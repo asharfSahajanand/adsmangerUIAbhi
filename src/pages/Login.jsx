@@ -22,7 +22,7 @@ export default function Login() {
     <div className="min-h-screen bg-gradient-to-br from-[#eef2f7] via-[#e6ecf5] to-[#dfe6ef]">
       
       {/* Header */}
-      <header className="w-full flex items-center justify-between px-10 py-5 bg-white shadow-sm">
+      <header className="w-full flex items-center justify-between px-4 sm:px-10 py-5 bg-white shadow-sm">
         <div className="flex items-center gap-3">
           <img
             src="/ads manager.png"
@@ -40,7 +40,7 @@ export default function Login() {
       </header>
 
       {/* Main */}
-      <main className="flex items-center justify-center min-h-[calc(100vh-80px)] px-6">
+      <main className="flex items-center justify-center min-h-[calc(100vh-80px)] px-4 sm:px-6">
         <div className="w-full max-w-md bg-white rounded-2xl shadow-[0_20px_60px_rgba(0,0,0,0.08)] p-10">
 
           <h1 className="text-2xl font-semibold text-center text-gray-800 mb-6">

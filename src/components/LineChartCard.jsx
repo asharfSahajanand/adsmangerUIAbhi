@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
   LineChart,
   Line,
@@ -6,6 +7,7 @@ import {
   Tooltip,
   ResponsiveContainer,
   CartesianGrid,
+  LabelList,
 } from "recharts";
 
 
@@ -21,9 +23,11 @@ export default function LineChartCard({
   height = 320,
   strokeColor = "#3b82f6",
 }) {
+  // Controls whether the numeric values are drawn on top of each point
+  const [showValues, setShowValues] = useState(false);
   return (
     <div className="bg-white rounded-2xl shadow-sm p-6">
-      <div className="flex justify-between items-center mb-4">
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
         <h2 className="font-semibold text-gray-700 text-lg">{title}</h2>
         <div className="flex items-center gap-2">
           {subtitle && <span className="text-sm text-gray-500">{subtitle}</span>}
@@ -58,14 +62,31 @@ export default function LineChartCard({
               strokeWidth={2}
               dot={{ r: 3 }}
               activeDot={{ r: 5 }}
-            />
+            >
+              {showValues && (
+                <LabelList
+                  dataKey={dataKey}
+                  position="top"
+                  formatter={(val) =>
+                    typeof val === "number" ? val.toFixed(2) : val
+                  }
+                  className="text-[10px] fill-gray-700"
+                />
+              )}
+            </Line>
           </LineChart>
         </ResponsiveContainer>
       </div>
 
       {showLegend && (
-        <div className="flex items-center gap-2 mt-2">
-          <input type="checkbox" id="chart-legend" defaultChecked className="rounded" />
+        <div className="flex items-center justify-center gap-2 mt-3">
+          <input
+            type="checkbox"
+            id="chart-legend"
+            checked={showValues}
+            onChange={(e) => setShowValues(e.target.checked)}
+            className="rounded"
+          />
           <label htmlFor="chart-legend" className="text-sm text-gray-600">
             {valueLabel || dataKey}
           </label>

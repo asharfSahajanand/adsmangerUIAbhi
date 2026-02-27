@@ -1,0 +1,140 @@
+{
+  "summaryCards": [
+    {
+      "title": "Total Revenue",
+      "value": "$74.79",
+      "iconKey": "revenue",
+      "color": "text-blue-600",
+      "bg": "bg-blue-50",
+      "image": "/Bar chart 1 (1).png"
+    },
+    {
+      "title": "Total App & Website Domain",
+      "value": "390",
+      "iconKey": "domain",
+      "color": "text-green-600",
+      "bg": "bg-green-50",
+      "image": "/Vector.png"
+    },
+    {
+      "title": "Impacted Records",
+      "value": "173",
+      "iconKey": "records",
+      "color": "text-yellow-600",
+      "bg": "bg-yellow-50",
+      "image": "/Group.png"
+    }
+  ],
+  "tableData": [
+    {
+      "date": "22 Feb 2026",
+      "appId": "com/music/musicplayer",
+      "site": "Fmrxm.com",
+      "revenue": 1530,
+      "impression": 12450,
+      "eCTR": 2.1,
+      "ctr": 1.8,
+      "adExchangeMatch": 85,
+      "totalFill": 92
+    },
+    {
+      "date": "22 Feb 2026",
+      "appId": "com/music/musicplayer",
+      "site": "Fmrxm.com",
+      "revenue": 1830,
+      "impression": 14200,
+      "eCTR": 2.3,
+      "ctr": 2.0,
+      "adExchangeMatch": 88,
+      "totalFill": 94
+    },
+    {
+      "date": "21 Feb 2026",
+      "appId": "com/music/musicplayer",
+      "site": "Fmrxm.com",
+      "revenue": 2529,
+      "impression": 18900,
+      "eCTR": 2.5,
+      "ctr": 2.2,
+      "adExchangeMatch": 90,
+      "totalFill": 96
+    },
+    {
+      "date": "21 Feb 2026",
+      "appId": "com/music/musicplayer",
+      "site": "Fmrxm.com",
+      "revenue": 1209,
+      "impression": 9800,
+      "eCTR": 1.9,
+      "ctr": 1.6,
+      "adExchangeMatch": 82,
+      "totalFill": 89
+    },
+    {
+      "date": "20 Feb 2026",
+      "appId": "com/music/musicplayer",
+      "site": "Fmrxm.com",
+      "revenue": 1650,
+      "impression": 13100,
+      "eCTR": 2.2,
+      "ctr": 1.9,
+      "adExchangeMatch": 86,
+      "totalFill": 93
+    },
+    {
+      "date": "20 Feb 2026",
+      "appId": "com/music/musicplayer",
+      "site": "Fmrxm.com",
+      "revenue": 2100,
+      "impression": 16500,
+      "eCTR": 2.4,
+      "ctr": 2.1,
+      "adExchangeMatch": 87,
+      "totalFill": 95
+    },
+    {
+      "date": "19 Feb 2026",
+      "appId": "com/music/musicplayer",
+      "site": "Fmrxm.com",
+      "revenue": 1900,
+      "impression": 15000,
+      "eCTR": 2.2,
+      "ctr": 1.9,
+      "adExchangeMatch": 88,
+      "totalFill": 93
+    },
+    {
+      "date": "19 Feb 2026",
+      "appId": "com/music/musicplayer",
+      "site": "Fmrxm.com",
+      "revenue": 1750,
+      "impression": 13800,
+      "eCTR": 2.0,
+      "ctr": 1.7,
+      "adExchangeMatch": 86,
+      "totalFill": 91
+    },
+    {
+      "date": "18 Feb 2026",
+      "appId": "com/music/musicplayer",
+      "site": "Fmrxm.com",
+      "revenue": 1620,
+      "impression": 12950,
+      "eCTR": 1.9,
+      "ctr": 1.6,
+      "adExchangeMatch": 84,
+      "totalFill": 90
+    },
+    {
+      "date": "18 Feb 2026",
+      "appId": "com/music/musicplayer",
+      "site": "Fmrxm.com",
+      "revenue": 1980,
+      "impression": 17100,
+      "eCTR": 2.3,
+      "ctr": 2.0,
+      "adExchangeMatch": 89,
+      "totalFill": 94
+    }
+  ]
+}

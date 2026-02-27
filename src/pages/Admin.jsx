@@ -23,7 +23,7 @@ export default function Admin() {
   const [editChannelsUser, setEditChannelsUser] = useState(null);
 
   return (
-    <div className="bg-[#f4f6fb] min-h-screen p-6">
+    <div className="bg-[#f4f6fb] min-h-screen px-4 py-6 sm:px-6">
       <div className="max-w-6xl mx-auto">
         {/* Page title & subtitle - on light grey background */}
         <div className="mb-6">
@@ -65,7 +65,7 @@ export default function Admin() {
             {activeTab === "user" && (
               <>
                 {/* User List heading + Add User pill button */}
-                <div className="flex items-center justify-between mb-5">
+                <div className="flex flex-wrap items-center justify-between gap-3 mb-5">
                   <h2 className="text-lg font-bold text-gray-800">User List</h2>
                   <button
                     onClick={() => setAddUserModalOpen(true)}

@@ -6,7 +6,8 @@ export default function Navbar() {
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const navigate = useNavigate();
 
-  const navClass = "px-5 py-2.5 text-sm font-medium rounded-full transition-colors";
+  const navClass =
+    "w-full md:w-auto text-center px-3 sm:px-5 py-2 text-xs sm:text-sm font-medium rounded-full transition-colors whitespace-nowrap";
   const activeClass = "bg-blue-500 text-white shadow-sm";
   const inactiveClass = "text-gray-600 hover:text-gray-800";
 
@@ -16,8 +17,7 @@ export default function Navbar() {
   };
 
   return (
-    <nav className="flex items-center justify-between px-8 py-3 bg-white border-b border-gray-200 shadow-sm">
-      
+    <nav className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between px-4 sm:px-6 lg:px-8 py-3 bg-white border-b border-gray-200 shadow-sm">
       {/* Left: Logo + Brand */}
       <div className="flex items-center gap-3">
         <NavLink to="/dashboard" className="flex items-center gap-3">
@@ -30,35 +30,37 @@ export default function Navbar() {
       </div>
 
       {/* Center: Nav tabs */}
-      <div className="flex items-center gap-1 bg-gray-200/80 px-1 py-1 rounded-xl shadow-sm border border-gray-200/60">
-        <NavLink
-          to="/dashboard"
-          className={({ isActive }) => `${navClass} ${isActive ? activeClass : inactiveClass}`}
-        >
-          Dashboard
-        </NavLink>
-        <NavLink
-          to="/reporting"
-          className={({ isActive }) => `${navClass} ${isActive ? activeClass : inactiveClass}`}
-        >
-          Reporting
-        </NavLink>
-        <NavLink
-          to="/admin"
-          className={({ isActive }) => `${navClass} ${isActive ? activeClass : inactiveClass}`}
-        >
-          Admin
-        </NavLink>
-        <NavLink
-          to="/domain-user"
-          className={({ isActive }) => `${navClass} ${isActive ? activeClass : inactiveClass}`}
-        >
-          Domain User
-        </NavLink>
+      <div className="w-full md:w-auto">
+        <div className="grid grid-cols-2 md:flex md:flex-nowrap justify-center gap-1 bg-gray-200/80 px-1 py-1 rounded-xl shadow-sm border border-gray-200/60">
+          <NavLink
+            to="/dashboard"
+            className={({ isActive }) => `${navClass} ${isActive ? activeClass : inactiveClass}`}
+          >
+            Dashboard
+          </NavLink>
+          <NavLink
+            to="/reporting"
+            className={({ isActive }) => `${navClass} ${isActive ? activeClass : inactiveClass}`}
+          >
+            Reporting
+          </NavLink>
+          <NavLink
+            to="/admin"
+            className={({ isActive }) => `${navClass} ${isActive ? activeClass : inactiveClass}`}
+          >
+            Admin
+          </NavLink>
+          <NavLink
+            to="/domain-user"
+            className={({ isActive }) => `${navClass} ${isActive ? activeClass : inactiveClass}`}
+          >
+            Domain User
+          </NavLink>
+        </div>
       </div>
 
       {/* Right: User dropdown - keep same button UI, just show Logout when clicked */}
-      <div className="relative flex items-center">
+      <div className="relative flex items-center justify-end">
         <button
           type="button"
           onClick={() => setIsUserMenuOpen((open) => !open)}
@@ -82,7 +84,6 @@ export default function Navbar() {
           </div>
         )}
       </div>
-
     </nav>
   );
 }
