@@ -1,16 +1,43 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { FiEye, FiEyeOff } from "react-icons/fi";
+import { addUser } from "../utils/authStorage";
 
 export default function DomainUser() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [role, setRole] = useState("Admin");
   const [domains, setDomains] = useState("");
+  const [message, setMessage] = useState({ type: "", text: "" });
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // For now just prevent page reload; hook up API later.
-    console.log({ username, password, role, domains });
+    setMessage({ type: "", text: "" });
+    if (!username.trim()) {
+      setMessage({ type: "error", text: "Email is required." });
+      return;
+    }
+    if (!password || password.length < 6) {
+      setMessage({ type: "error", text: "Password must be at least 6 characters." });
+      return;
+    }
+    const domainsList = domains
+      .split(/\n/)
+      .map((d) => d.trim())
+      .filter(Boolean);
+    const result = addUser({ username: username.trim(), password, role, domains: domainsList });
+    if (result.ok) {
+      setMessage({
+        type: "success",
+        text: "User created. They can log in and will only see data for their assigned domains.",
+      });
+      setUsername("");
+      setPassword("");
+      setDomains("");
+    } else {
+      setMessage({ type: "error", text: result.message || "Failed to create user." });
+    }
   };
 
   return (
@@ -35,13 +62,14 @@ export default function DomainUser() {
           <form onSubmit={handleSubmit} className="px-8 py-6 space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                Username
+                Email
               </label>
               <input
-                type="text"
+                type="email"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                placeholder="Enter username"
+                placeholder="Enter email"
+                autoComplete="off"
                 className="w-full border border-gray-200 rounded-full px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
@@ -50,13 +78,24 @@ export default function DomainUser() {
               <label className="block text-sm font-medium text-gray-700 mb-1.5">
                 Password
               </label>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Enter your password"
-                className="w-full border border-gray-200 rounded-full px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
+              <div className="relative">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Password"
+                  autoComplete="new-password"
+                  className="w-full border border-gray-200 rounded-full pl-4 pr-11 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((v) => !v)}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-gray-500 hover:text-gray-700 rounded-full hover:bg-gray-100"
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                >
+                  {showPassword ? <FiEyeOff className="w-4 h-4" /> : <FiEye className="w-4 h-4" />}
+                </button>
+              </div>
             </div>
 
             <div>
@@ -75,19 +114,25 @@ export default function DomainUser() {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                Role
+                Domains (one per line – user will only see data for these)
               </label>
               <textarea
                 rows={3}
                 value={domains}
                 onChange={(e) => setDomains(e.target.value)}
-                placeholder="Error loading domains"
+                placeholder="e.g. Finrezo.com&#10;Fmrxm.com"
                 className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
               />
               <p className="mt-1 text-xs text-gray-500">
-                Hold Ctrl/Cmd to select multiple domains
+                One domain per line. Add multiple lines to let this user see data from all of them (e.g. both Finrezo.com and Fmrxm.com). Leave empty for no restriction (admin-like).
               </p>
             </div>
+
+            {message.text && (
+              <p className={`text-sm ${message.type === "success" ? "text-green-600" : "text-red-600"}`}>
+                {message.text}
+              </p>
+            )}
 
             <div className="pt-4 pb-2 flex justify-center">
               <button

@@ -1,8 +1,9 @@
-import { useState } from "react";
-import { FiPlusCircle, FiEdit2, FiList } from "react-icons/fi";
+import { useState, useMemo } from "react";
+import { FiPlusCircle, FiEdit2, FiList, FiChevronDown } from "react-icons/fi";
 import AddNewUserModal from "../components/AddNewUserModal";
 import EditChannelPermissionsModal from "../components/EditChannelPermissionsModal";
 import EditUserRolesModal from "../components/EditUserRolesModal";
+import { getAllUsers } from "../utils/authStorage";
 
 const initialUsers = [
   { id: "01", userName: "Master", domain: "xyz.com", role: "Admin" },
@@ -21,6 +22,16 @@ export default function Admin() {
   const [addUserModalOpen, setAddUserModalOpen] = useState(false);
   const [editUser, setEditUser] = useState(null);
   const [editChannelsUser, setEditChannelsUser] = useState(null);
+  const [domainPermissionsUserSelect, setDomainPermissionsUserSelect] = useState("");
+  const [domainPermissionsDropdownOpen, setDomainPermissionsDropdownOpen] = useState(false);
+
+  const allStoredUsers = useMemo(() => getAllUsers(), [addUserModalOpen]);
+  const selectedUserForDomains = useMemo(
+    () => allStoredUsers.find((u) => (u.username || "").toLowerCase() === domainPermissionsUserSelect.toLowerCase()) || null,
+    [allStoredUsers, domainPermissionsUserSelect]
+  );
+  const assignedDomains = selectedUserForDomains?.domains ?? [];
+  const assignedDomainsCount = Array.isArray(assignedDomains) ? assignedDomains.length : 0;
 
   return (
     <div className="bg-[#f4f6fb] min-h-screen px-4 py-6 sm:px-6">
@@ -34,7 +45,7 @@ export default function Admin() {
         </div>
 
         {/* Single white rounded card - tabs, user list, table */}
-        <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
+        <div className="bg-white rounded-2xl shadow-sm overflow-visible">
           {/* Tabs - User (active with blue underline) | Domain Permissions */}
           <div className="border-b border-gray-200 px-6 pt-5">
             <div className="flex gap-8">
@@ -143,11 +154,74 @@ export default function Admin() {
                 </div>
 
                 <div className="mt-6">
-                  <div className="w-full h-72 bg-white rounded-2xl border border-gray-200 flex items-start pt-6 pl-8">
-                    <span className="text-base font-medium text-gray-700">
-                      Domain Permissions
-                    </span>
+                  <label className="block text-sm font-semibold text-gray-800 mb-2">
+                    Select User
+                  </label>
+                  <div className="relative w-full max-w-xl">
+                    <button
+                      type="button"
+                      onClick={() => setDomainPermissionsDropdownOpen((o) => !o)}
+                      className="w-full flex items-center justify-between gap-2 rounded-xl border border-gray-200 bg-white px-4 py-3 text-left text-sm text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    >
+                      <span className={domainPermissionsUserSelect ? "text-gray-800" : "text-gray-400"}>
+                        {selectedUserForDomains
+                          ? `${selectedUserForDomains.username}${selectedUserForDomains.role ? ` (${selectedUserForDomains.role})` : ""}`
+                          : "Select User"}
+                      </span>
+                      <FiChevronDown
+                        className={`w-4 h-4 text-gray-500 shrink-0 transition-transform ${domainPermissionsDropdownOpen ? "rotate-180" : ""}`}
+                      />
+                    </button>
+                    {domainPermissionsDropdownOpen && (
+                      <>
+                        <div
+                          className="fixed inset-0 z-[1000]"
+                          aria-hidden
+                          onClick={() => setDomainPermissionsDropdownOpen(false)}
+                        />
+                        <div className="absolute z-[1001] mt-1 w-full rounded-xl border border-gray-200 bg-white shadow-xl py-1 max-h-60 overflow-auto">
+                          {allStoredUsers.length === 0 ? (
+                            <div className="px-4 py-3 text-sm text-gray-500">No users found</div>
+                          ) : (
+                            allStoredUsers.map((u) => (
+                              <button
+                                key={u.username}
+                                type="button"
+                                onClick={() => {
+                                  setDomainPermissionsUserSelect(u.username || "");
+                                  setDomainPermissionsDropdownOpen(false);
+                                }}
+                                className="w-full text-left px-4 py-2.5 text-sm text-gray-800 hover:bg-blue-50 flex items-center justify-between"
+                              >
+                                <span>{u.username}</span>
+                                {u.role && (
+                                  <span className="text-xs text-gray-500">{u.role}</span>
+                                )}
+                              </button>
+                            ))
+                          )}
+                        </div>
+                      </>
+                    )}
                   </div>
+
+                  {selectedUserForDomains && (
+                    <div className="mt-4 p-4 rounded-xl border border-gray-200 bg-gray-50/50">
+                      <p className="text-sm font-semibold text-gray-800 mb-1">
+                        Domains assigned to this user
+                      </p>
+                      <p className="text-sm text-gray-600">
+                        {assignedDomainsCount === 0 ? (
+                          "No domains assigned. This user has access to all data (admin-like)."
+                        ) : (
+                          <>
+                            <span className="font-medium text-gray-800">{assignedDomainsCount} domain{assignedDomainsCount !== 1 ? "s" : ""} assigned:</span>{" "}
+                            {assignedDomains.join(", ")}
+                          </>
+                        )}
+                      </p>
+                    </div>
+                  )}
                 </div>
               </div>
             )}

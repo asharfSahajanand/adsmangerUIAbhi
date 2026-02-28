@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import {
   FiFilter,
   FiDollarSign,
@@ -10,29 +10,127 @@ import {
 import reportingData from "../data/reportingData.json";
 import LineChartCard from "../components/LineChartCard";
 import DataTableCard from "../components/DataTableCard";
+import { useDataByUserDomains } from "../hooks/useDataByUserDomains";
+
+// Parse "1 Jan 2026" → "2026-01-01" for comparison
+function dateStrToYMD(dateStr) {
+  const d = new Date(dateStr);
+  if (isNaN(d.getTime())) return null;
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+
+function getTodayYMD() {
+  const t = new Date();
+  return `${t.getFullYear()}-${String(t.getMonth() + 1).padStart(2, "0")}-${String(t.getDate()).padStart(2, "0")}`;
+}
 
 export default function Reporting() {
   const [filterOpen, setFilterOpen] = useState(true);
   const [dateRange, setDateRange] = useState("month"); // today | week | month
-  const [startDate, setStartDate] = useState("03-01-2025");
-  const [endDate, setEndDate] = useState("05-03-2025");
+  const [startDate, setStartDate] = useState("2026-01-01");
+  const [endDate, setEndDate] = useState("2026-02-29");
   const [chartRange, setChartRange] = useState("Last 7 Days");
   const [currentPage, setCurrentPage] = useState(1);
+  const [domainId, setDomainId] = useState("");
+  const [domainName, setDomainName] = useState("");
+  const [reportMessage, setReportMessage] = useState(null);
 
-  // ✅ Summary cards from JSON, with icons attached here
-  const summaryCards = reportingData.summaryCards.map((card) => {
-    let icon = FiDollarSign;
-    if (card.iconKey === "domain") icon = FiTrendingUp;
-    else if (card.iconKey === "records") icon = FiFileText;
-    return { ...card, icon };
-  });
+  const tableData = useDataByUserDomains(reportingData.tableData || [], "site");
+  const todayYMD = getTodayYMD();
 
-  // ✅ Table data from JSON
-  const tableData = reportingData.tableData;
+  // Dynamic filtered data: date filter first, then Domain ID and Domain Name (optional)
+  const filteredTableData = useMemo(() => {
+    let dateFiltered;
+    const hasCustomRange = startDate && endDate && startDate <= endDate;
+    if (hasCustomRange) {
+      dateFiltered = tableData.filter((row) => {
+        const ymd = dateStrToYMD(row.date);
+        return ymd && ymd >= startDate && ymd <= endDate;
+      });
+    } else if (dateRange === "today") {
+      dateFiltered = tableData.filter((row) => dateStrToYMD(row.date) === todayYMD);
+    } else if (dateRange === "week") {
+      const start = new Date(todayYMD);
+      start.setDate(start.getDate() - 6);
+      const weekStart = start.toISOString().slice(0, 10);
+      dateFiltered = tableData.filter((row) => {
+        const ymd = dateStrToYMD(row.date);
+        return ymd && ymd >= weekStart && ymd <= todayYMD;
+      });
+    } else {
+      const [y, m] = todayYMD.split("-");
+      const monthStart = `${y}-${m}-01`;
+      const endOfMonth = new Date(Number(y), Number(m), 0);
+      const monthEndStr = `${y}-${String(endOfMonth.getMonth() + 1).padStart(2, "0")}-${String(endOfMonth.getDate()).padStart(2, "0")}`;
+      dateFiltered = tableData.filter((row) => {
+        const ymd = dateStrToYMD(row.date);
+        return ymd && ymd >= monthStart && ymd <= monthEndStr;
+      });
+    }
+    const idTrim = (domainId || "").trim().toLowerCase();
+    const nameTrim = (domainName || "").trim().toLowerCase();
+    if (!idTrim && !nameTrim) return dateFiltered;
+    return dateFiltered.filter((row) => {
+      const matchId = !idTrim || (row.appId || "").toLowerCase().includes(idTrim);
+      const matchName = !nameTrim || (row.site || "").toLowerCase().includes(nameTrim);
+      return matchId && matchName;
+    });
+  }, [tableData, dateRange, startDate, endDate, todayYMD, domainId, domainName]);
+
+  // Reset to page 1 when any filter changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [dateRange, startDate, endDate, domainId, domainName]);
+
+  const handleGenerateReport = () => {
+    setReportMessage("Report generated with current filters.");
+    setTimeout(() => setReportMessage(null), 3000);
+  };
+
+  const handleDownloadCSV = () => {
+    const headers = ["Date", "App ID", "Site", "Revenue", "Impression", "eCTR", "CTR", "Ad Exchange Match", "Total Fill"];
+    const rows = filteredTableData.map((row) => [
+      row.date,
+      row.appId,
+      row.site,
+      row.revenue,
+      row.impression,
+      row.eCTR,
+      row.ctr,
+      row.adExchangeMatch,
+      row.totalFill,
+    ]);
+    const csvContent = [headers.join(","), ...rows.map((r) => r.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(","))].join("\n");
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `report-${new Date().toISOString().slice(0, 10)}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+    setReportMessage("CSV downloaded.");
+    setTimeout(() => setReportMessage(null), 2000);
+  };
+
+  // Dynamic summary cards from filtered data
+  const summaryCards = useMemo(() => {
+    const revenue = filteredTableData.reduce((s, r) => s + r.revenue, 0);
+    const uniqueSites = new Set(filteredTableData.map((r) => r.site)).size;
+    const records = filteredTableData.length;
+    const base = reportingData.summaryCards;
+    return [
+      { ...base[0], value: `$${revenue.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, icon: FiDollarSign },
+      { ...base[1], value: String(uniqueSites), icon: FiTrendingUp },
+      { ...base[2], value: String(records), icon: FiFileText },
+    ];
+  }, [filteredTableData]);
 
   const rowsPerPage = 10;
-  const totalPages = Math.ceil(tableData.length / rowsPerPage) || 1;
-  const paginatedTableData = tableData.slice(
+  const totalPages = Math.ceil(filteredTableData.length / rowsPerPage) || 1;
+  const paginatedTableData = filteredTableData.slice(
     (currentPage - 1) * rowsPerPage,
     currentPage * rowsPerPage
   );
@@ -41,76 +139,95 @@ export default function Reporting() {
       ? Array.from({ length: totalPages }, (_, idx) => idx + 1)
       : [];
 
-  const totals = tableData.reduce(
-    (acc, row) => ({
-      revenue: acc.revenue + row.revenue,
-      impression: acc.impression + row.impression,
-      eCTR: acc.eCTR + row.eCTR,
-      ctr: acc.ctr + row.ctr,
-      adExchangeMatch: acc.adExchangeMatch + row.adExchangeMatch,
-      totalFill: acc.totalFill + row.totalFill,
-    }),
-    { revenue: 0, impression: 0, eCTR: 0, ctr: 0, adExchangeMatch: 0, totalFill: 0 }
+  const totals = useMemo(
+    () =>
+      filteredTableData.reduce(
+        (acc, row) => ({
+          revenue: acc.revenue + row.revenue,
+          impression: acc.impression + row.impression,
+          eCTR: acc.eCTR + row.eCTR,
+          ctr: acc.ctr + row.ctr,
+          adExchangeMatch: acc.adExchangeMatch + row.adExchangeMatch,
+          totalFill: acc.totalFill + row.totalFill,
+        }),
+        { revenue: 0, impression: 0, eCTR: 0, ctr: 0, adExchangeMatch: 0, totalFill: 0 }
+      ),
+    [filteredTableData]
   );
 
-  const rowCount = tableData.length;
-  const avgECTR = totals.eCTR / rowCount;
-  const avgCTR = totals.ctr / rowCount;
-  const avgAdExchangeMatch = totals.adExchangeMatch / rowCount;
-  const avgTotalFill = totals.totalFill / rowCount;
+  const rowCount = filteredTableData.length;
+  const avgECTR = rowCount ? totals.eCTR / rowCount : 0;
+  const avgCTR = rowCount ? totals.ctr / rowCount : 0;
+  const avgAdExchangeMatch = rowCount ? totals.adExchangeMatch / rowCount : 0;
+  const avgTotalFill = rowCount ? totals.totalFill / rowCount : 0;
 
-  const chartData = [
-    { date: "Feb 04", earning: 42.5 },
-    { date: "Feb 05", earning: 45.2 },
-    { date: "Feb 06", earning: 43.1 },
-    { date: "Feb 07", earning: 47.8 },
-    { date: "Feb 08", earning: 46.0 },
-    { date: "Feb 09", earning: 48.5 },
-    { date: "Feb 10", earning: 49.2 },
-    { date: "Feb 11", earning: 49.34 },
-    { date: "Feb 12", earning: 47.1 },
-    { date: "Feb 13", earning: 45.8 },
-    { date: "Feb 14", earning: 44.2 },
-    { date: "Feb 15", earning: 46.5 },
-    { date: "Feb 16", earning: 48.0 },
-    { date: "Feb 17", earning: 47.3 },
-    { date: "Feb 18", earning: 45.9 },
-    { date: "Feb 19", earning: 44.8 },
-    { date: "Feb 20", earning: 46.2 },
-  ];
+  // Chart data from filtered table: group by date, sum revenue
+  const chartData = useMemo(() => {
+    const byDate = {};
+    filteredTableData.forEach((row) => {
+      const d = row.date;
+      if (!byDate[d]) byDate[d] = { date: d, earning: 0 };
+      byDate[d].earning += row.revenue;
+    });
+    return Object.values(byDate).sort(
+      (a, b) => new Date(a.date) - new Date(b.date)
+    );
+  }, [filteredTableData]);
+
+  // Chart range: limit points shown (Last 7 / Last 14 / all filtered)
+  const chartDataDisplay = useMemo(() => {
+    if (chartRange === "Last 7 Days") return chartData.slice(-7);
+    if (chartRange === "Last 14 Days") return chartData.slice(-14);
+    return chartData;
+  }, [chartData, chartRange]);
 
   return (
-    <div className="bg-[#f4f6fb] min-h-screen px-4 py-6 sm:px-6">
-      <div className="max-w-7xl mx-auto">
+    <div className="bg-[#f4f6fb] min-h-screen px-3 py-4 sm:px-6 sm:py-6 min-w-0">
+      <div className="max-w-7xl mx-auto min-w-0">
         {/* ================= HEADER ================= */}
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold text-gray-800">Reporting</h1>
+        <div className="mb-4 sm:mb-6">
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-800">Reporting</h1>
           <p className="text-gray-500 text-sm mt-1">
             Offers real-time and historical reporting for ad campaigns
           </p>
         </div>
 
         {/* ================= FILTER OPTION ================= */}
-        <div className="bg-white rounded-2xl shadow-sm mb-6 overflow-hidden">
-          <div className="flex flex-wrap items-center justify-between gap-4 p-6">
+        <div className="bg-white rounded-2xl shadow-sm mb-4 sm:mb-6 overflow-hidden">
+          <div className="flex flex-wrap items-center justify-between gap-4 p-4 sm:p-6">
             <h2 className="font-semibold text-gray-700 flex items-center gap-2 text-lg">
               <FiFilter /> Filter Option
             </h2>
             <div className="flex flex-wrap items-center justify-end gap-2">
-              <button className="bg-blue-600 text-white px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-blue-700">
+              {reportMessage && (
+                <span className="text-sm text-green-600 font-medium animate-pulse mr-1">
+                  {reportMessage}
+                </span>
+              )}
+              <button
+                type="button"
+                onClick={handleGenerateReport}
+                className="bg-blue-600 text-white px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg text-sm font-medium hover:bg-blue-700 whitespace-nowrap"
+              >
                 Generate Report
               </button>
-              <button className="bg-green-600 text-white px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-green-700">
+              <button
+                type="button"
+                onClick={handleDownloadCSV}
+                className="bg-green-600 text-white px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg text-sm font-medium hover:bg-green-700 whitespace-nowrap"
+              >
                 Download CSV
               </button>
               <button
                 type="button"
                 onClick={() => {
                   setDateRange("month");
-                  setStartDate("03-01-2025");
-                  setEndDate("05-03-2025");
+                  setStartDate("2026-01-01");
+                  setEndDate("2026-02-29");
+                  setDomainId("");
+                  setDomainName("");
                 }}
-                className="bg-gray-200 text-gray-700 px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-gray-300"
+                className="bg-gray-200 text-gray-700 px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg text-sm font-medium hover:bg-gray-300 whitespace-nowrap"
               >
                 Reset
               </button>
@@ -129,7 +246,7 @@ export default function Reporting() {
             </div>
           </div>
           {filterOpen && (
-            <div className="px-6 pb-6 pt-0 border-t border-gray-100">
+            <div className="px-4 sm:px-6 pb-4 sm:pb-6 pt-0 border-t border-gray-100">
               {/* Row 1: Date filter + Start/End - medium width controls */}
               <div className="flex flex-wrap gap-4 items-center pt-4">
                 {/* Date Filter - match Dashboard style with icon */}
@@ -137,7 +254,7 @@ export default function Reporting() {
                   <label className="block text-xs text-gray-500 mb-1">
                     Date Filter
                   </label>
-                  <div className="flex gap-1 p-0.5 border border-gray-200 rounded-lg bg-gray-50/50">
+                  <div className="flex flex-wrap gap-1 p-0.5 border border-gray-200 rounded-lg bg-gray-50/50">
                     {[
                       { id: "today", label: "Today" },
                       { id: "week", label: "Last 7 Days" },
@@ -145,14 +262,18 @@ export default function Reporting() {
                     ].map((opt) => (
                       <button
                         key={opt.id}
-                        onClick={() => setDateRange(opt.id)}
-                        className={`flex items-center gap-1.5 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                        onClick={() => {
+                          setDateRange(opt.id);
+                          setStartDate("");
+                          setEndDate("");
+                        }}
+                        className={`flex items-center gap-1.5 px-3 py-2 rounded-md text-sm font-medium transition-colors whitespace-nowrap ${
                           dateRange === opt.id
                             ? "bg-blue-600 text-white shadow-sm"
                             : "bg-white text-gray-700 border border-gray-200 hover:bg-gray-50"
                         }`}
                       >
-                        <FiCalendar className="w-4 h-4" />
+                        <FiCalendar className="w-4 h-4 shrink-0" />
                         {opt.label}
                       </button>
                     ))}
@@ -200,8 +321,10 @@ export default function Reporting() {
                   </label>
                   <input
                     type="text"
+                    value={domainId}
+                    onChange={(e) => setDomainId(e.target.value)}
                     placeholder="Search by domain id"
-                    className="border border-gray-200 rounded-full px-4 py-2 text-sm w-full md:w-64"
+                    className="border border-gray-200 rounded-full px-4 py-2 text-sm w-full md:w-64 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
                 </div>
                 <div className="w-full md:w-auto">
@@ -210,8 +333,10 @@ export default function Reporting() {
                   </label>
                   <input
                     type="text"
+                    value={domainName}
+                    onChange={(e) => setDomainName(e.target.value)}
                     placeholder="Search by domain name"
-                    className="border border-gray-200 rounded-full px-4 py-2 text-sm w-full md:w-64"
+                    className="border border-gray-200 rounded-full px-4 py-2 text-sm w-full md:w-64 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
                 </div>
               </div>
@@ -220,9 +345,9 @@ export default function Reporting() {
         </div>
 
         {/* ================= SUMMARY CARDS ================= */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-6">
           {summaryCards.map((card, index) => (
-            <div key={index} className="bg-white p-6 rounded-2xl shadow-sm flex items-center gap-4">
+            <div key={index} className="bg-white p-4 sm:p-6 rounded-2xl shadow-sm flex items-center gap-4 min-w-0">
               <div className={`p-3 rounded-xl ${card.bg}`}>
                 {card.image ? (
                   <img
@@ -236,14 +361,14 @@ export default function Reporting() {
               </div>
               <div>
                 <p className="text-gray-500 text-sm">{card.title}</p>
-                <h3 className="text-2xl font-semibold text-gray-800 mt-1">{card.value}</h3>
+                <h3 className="text-xl sm:text-2xl font-semibold text-gray-800 mt-1 truncate">{card.value}</h3>
               </div>
             </div>
           ))}
         </div>
 
         {/* ================= DATA TABLE (reusable component) ================= */}
-        <div className="mb-6">
+        <div className="mb-6 overflow-hidden">
           <DataTableCard
             title="Report Data"
             columns={[
@@ -319,17 +444,18 @@ export default function Reporting() {
 
         {/* ================= DAILY PERFORMANCE CHART (reusable component) ================= */}
         <LineChartCard
-          data={chartData}
+          data={chartDataDisplay}
           title="Daily Performance"
           dataKey="earning"
           xAxisKey="date"
           valueLabel="Estimated Earning ($)"
           showLegend
+          height={280}
           rightHeader={
             <select
               value={chartRange}
               onChange={(e) => setChartRange(e.target.value)}
-              className="border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-600"
+              className="border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-600 w-full min-w-0 sm:w-auto"
             >
               <option>Last 7 Days</option>
               <option>Last 14 Days</option>

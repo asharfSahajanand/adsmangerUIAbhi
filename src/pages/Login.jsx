@@ -1,20 +1,24 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-
+import { FiEye, FiEyeOff } from "react-icons/fi";
+import { validateLogin, setCurrentUser } from "../utils/authStorage";
 
 export default function Login() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
   const handleSubmit = (e) => {
     e.preventDefault();
-
-    if (username === "admin@gmail.com" && password === "123456") {
-      navigate("/dashboard"); // go to dashboard
+    setError("");
+    const user = validateLogin(username.trim(), password);
+    if (user) {
+      setCurrentUser(user);
+      navigate("/dashboard");
     } else {
-      setError("Invalid email or password");
+      setError("Invalid username or password");
     }
   };
 
@@ -51,10 +55,10 @@ export default function Login() {
             
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Email
+                 Email
               </label>
               <input
-                type="email"
+                type="text"
                 placeholder="admin@gmail.com"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
@@ -67,14 +71,24 @@ export default function Login() {
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Password
               </label>
-              <input
-                type="password"
-                placeholder="123456"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                className="w-full px-5 py-3 rounded-full border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-400"
-              />
+              <div className="relative">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  className="w-full pl-5 pr-12 py-3 rounded-full border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((v) => !v)}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-gray-500 hover:text-gray-700 rounded-full hover:bg-gray-100"
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                >
+                  {showPassword ? <FiEyeOff className="w-4 h-4" /> : <FiEye className="w-4 h-4" />}
+                </button>
+              </div>
             </div>
 
             {error && (

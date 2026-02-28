@@ -1,0 +1,10 @@
+{
+  "users": [
+    {
+      "username": "admin@gmail.com",
+      "password": "123456",
+      "role": "Admin",
+      "domains": []
+    }
+  ]
+}

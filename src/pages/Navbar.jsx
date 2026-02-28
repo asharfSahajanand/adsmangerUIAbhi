@@ -1,10 +1,12 @@
 import { useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { FiUser, FiChevronDown, FiLogOut } from "react-icons/fi";
+import { clearCurrentUser, getCurrentUser } from "../utils/authStorage";
 
 export default function Navbar() {
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const navigate = useNavigate();
+  const currentUser = getCurrentUser();
 
   const navClass =
     "w-full md:w-auto text-center px-3 sm:px-5 py-2 text-xs sm:text-sm font-medium rounded-full transition-colors whitespace-nowrap";
@@ -13,6 +15,7 @@ export default function Navbar() {
 
   const handleLogout = () => {
     setIsUserMenuOpen(false);
+    clearCurrentUser();
     navigate("/");
   };
 
@@ -67,7 +70,7 @@ export default function Navbar() {
           className="flex items-center gap-2 border border-gray-300 bg-transparent px-4 py-2 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors"
         >
           <FiUser className="w-5 h-5 text-gray-800" />
-          <span className="text-sm font-medium text-gray-800">Master</span>
+          <span className="text-sm font-medium text-gray-800">{currentUser?.username ?? "User"}</span>
           <FiChevronDown className="w-4 h-4 text-gray-600" />
         </button>
 
