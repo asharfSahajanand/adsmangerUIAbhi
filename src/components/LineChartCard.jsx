@@ -1,6 +1,7 @@
 import { useState } from "react";
 import {
-  LineChart,
+  AreaChart,
+  Area,
   Line,
   XAxis,
   YAxis,
@@ -37,7 +38,13 @@ export default function LineChartCard({
 
       <div style={{ height }}>
         <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={data}>
+          <AreaChart data={data}>
+            <defs>
+              <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor={strokeColor} stopOpacity={0.35} />
+                <stop offset="100%" stopColor={strokeColor} stopOpacity={0} />
+              </linearGradient>
+            </defs>
             <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
             <XAxis dataKey={xAxisKey} tick={{ fontSize: 12 }} />
             <YAxis
@@ -54,6 +61,7 @@ export default function LineChartCard({
                   }
                 : {})}
             />
+            <Area type="monotone" dataKey={dataKey} stroke="none" fill="url(#chartGradient)" />
             <Line
               type="monotone"
               dataKey={dataKey}
@@ -74,7 +82,7 @@ export default function LineChartCard({
                 />
               )}
             </Line>
-          </LineChart>
+          </AreaChart>
         </ResponsiveContainer>
       </div>
 
